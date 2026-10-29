@@ -867,9 +867,6 @@ public final class ProfileViewerScreen extends Screen {
 				this.dataLoader.ensureGardenIsland();
 				this.dataLoader.ensureGardenWeight();
 				PvSubTab sub = activeSub(PvSubTab.GARDEN_OVERVIEW);
-				if (sub == PvSubTab.GARDEN_JACOB) {
-					this.dataLoader.ensureGardenContests();
-				}
 				this.gardenPage.render(g, this.font, sub, x, y, w, h, mouseX, mouseY, this.width, this.height);
 			}
 			case MINING -> {

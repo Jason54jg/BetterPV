@@ -2,8 +2,8 @@ package dev.vy.betterpv.client.data;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.util.List;
@@ -37,35 +37,6 @@ public class JacobPlacementTest {
 	}
 
 	@Test
-	public void eliteUnclaimedSentinelIsNotFirstPlace() {
-		JsonArray elite = JsonParser.parseString("""
-			[
-			  {"crop":"Wheat","timestamp":1768857300,"collected":3200,"position":2397,"participants":2899,"medal":"none"},
-			  {"crop":"Sugar Cane","timestamp":1768857300,"collected":2880,"position":-1,"participants":2400,"medal":"ghost"},
-			  {"crop":"Melon","timestamp":1768864500,"collected":314485,"position":792,"participants":2580,"medal":"bronze"},
-			  {"crop":"Melon","timestamp":1768870000,"collected":12,"position":-1,"participants":2600,"medal":"ghost"}
-			]
-			""").getAsJsonArray();
-		GardenSnapshot snap = GardenSnapshot.empty().withEliteContests(elite);
-		for (GardenSnapshot.ContestEntry c : snap.contests()) {
-			if ("ghost".equals(c.medal())) {
-				assertEquals(0, c.placement());
-			}
-		}
-		assertEquals(new GardenSnapshot.CropPlacement(0, 0, 1, 1), snap.placement("SUGAR_CANE"));
-		assertEquals(new GardenSnapshot.CropPlacement(793, 2580, 2, 1), snap.placement("MELON"));
-		assertEquals(new GardenSnapshot.CropPlacement(2398, 2899, 1, 0), snap.placement("WHEAT"));
-	}
-
-	@Test
-	public void eliteRealFirstPlaceStillCounts() {
-		JsonArray elite = JsonParser.parseString("""
-			[{"crop":"Sunflower","timestamp":1785262500,"collected":3115360,"position":0,"participants":1290,"medal":"diamond"}]
-			""").getAsJsonArray();
-		assertEquals(1, GardenSnapshot.empty().withEliteContests(elite).placement("SUNFLOWER").best());
-	}
-
-	@Test
 	public void positionMissingNullOrNegativeIsUnknown() {
 		JsonObject c = JsonParser.parseString("""
 			{"a":-1,"b":null,"c":"x","d":0,"e":554,"f":-5}
@@ -90,5 +61,39 @@ public class JacobPlacementTest {
 		GardenSnapshot snap = GardenSnapshot.fromMember(member);
 		assertEquals(new GardenSnapshot.CropPlacement(0, 0, 1, 1), snap.placement("SUGAR_CANE"));
 		assertEquals(2398, snap.placement("WHEAT").best());
+	}
+
+	@Test
+	public void hypixelFirstPlaceStillCounts() {
+		JsonObject member = JsonParser.parseString("""
+			{"jacobs_contest":{"contests":{
+			  "480:1_1:DOUBLE_PLANT":{
+			    "collected":3115360,"claimed_position":0,"claimed_participants":1290,
+			    "claimed_medal":"diamond","claimed_rewards":true
+			  }
+			}}}
+			""").getAsJsonObject();
+		assertEquals(1, GardenSnapshot.fromMember(member).placement("SUNFLOWER").best());
+	}
+
+	@Test
+	public void hypixelContestTimestampFromKeyAndNewestFirst() {
+		assertEquals(1_768_857_300L, GardenSnapshot.timestampFromContestKey("467:4_2:WHEAT"));
+		assertEquals(0L, GardenSnapshot.timestampFromContestKey("WHEAT"));
+
+		JsonObject member = JsonParser.parseString("""
+			{"jacobs_contest":{"contests":{
+			  "467:4_2:WHEAT":{"collected":100,"claimed_position":10,"claimed_participants":100,"claimed_rewards":true},
+			  "467:4_5:MELON":{"collected":200,"claimed_position":5,"claimed_participants":100,"claimed_medal":"bronze","claimed_rewards":true},
+			  "466:12_31:SUGAR_CANE":{"collected":50}
+			}}}
+			""").getAsJsonObject();
+		List<GardenSnapshot.ContestEntry> contests = GardenSnapshot.fromMember(member).contests();
+		assertEquals(3, contests.size());
+		assertEquals("MELON", contests.get(0).crop());
+		assertEquals("WHEAT", contests.get(1).crop());
+		assertEquals("SUGAR_CANE", contests.get(2).crop());
+		assertTrue(contests.get(0).timestampSeconds() > contests.get(1).timestampSeconds());
+		assertTrue(contests.get(1).timestampSeconds() > contests.get(2).timestampSeconds());
 	}
 }

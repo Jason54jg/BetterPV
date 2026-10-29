@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.12 — Jacob contests from Hypixel
+
+Jacob contest history no longer depends on Elite’s contests API. The Jacob tab reads participations straight from Hypixel profile data (`jacobs_contest.contests`), with dates derived from SkyBlock contest keys so the list still sorts newest-first.
+
+### Changed
+- Contest history source: Hypixel SkyBlock profile data instead of Elite `/contests`
+- Contest timestamps inferred from Hypixel contest keys (`year:month_day:crop`) for relative dates and sorting
+
+### Removed
+- Elite contest history fetch, parse path, and Jacob tab credit line (Elite remains for farming weight only)
+
 ## 1.2.11 — Elite attribution update
 
 ### Changed
