@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.13 — Elite User-Agent
+
+Elite API requests now send an identifiable `BetterPV/<version>` User-Agent.
+
+### Changed
+- Elite API client: set `User-Agent` to `BetterPV/<mod version>` on weight requests
+
 ## 1.2.12 — Jacob contests from Hypixel
 
 Jacob contest history no longer depends on Elite’s contests API. The Jacob tab reads participations straight from Hypixel profile data (`jacobs_contest.contests`), with dates derived from SkyBlock contest keys so the list still sorts newest-first.

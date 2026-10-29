@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import net.fabricmc.loader.api.FabricLoader;
 
 /**
  * Elite Farmers public API ({@code https://api.elitebot.dev}).
@@ -25,6 +26,10 @@ public final class EliteBotApiClient {
 	private static final String BASE = "https://api.elitebot.dev";
 	private static final Duration TIMEOUT = Duration.ofSeconds(15);
 	private static final long SPACING_MS = 400L;
+	private static final String USER_AGENT = "BetterPV/" + FabricLoader.getInstance()
+		.getModContainer(BetterPV.MOD_ID)
+		.map(container -> container.getMetadata().getVersion().getFriendlyString())
+		.orElse("unknown");
 
 	private static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
 	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(2, r -> {
@@ -51,7 +56,7 @@ public final class EliteBotApiClient {
 	private static Optional<JsonObject> getObject(String url) {
 		waitForSlot();
 		try {
-			HttpRequest request = HttpRequest.newBuilder(URI.create(url)).timeout(TIMEOUT).GET().build();
+			HttpRequest request = eliteGet(url);
 			HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
 			if (response.statusCode() < 200 || response.statusCode() >= 300 || response.body() == null || response.body().isBlank()) {
 				BetterPV.LOGGER.warn("Elite GET {} status={}", url, response.statusCode());
@@ -75,6 +80,14 @@ public final class EliteBotApiClient {
 			BetterPV.LOGGER.warn("Elite GET {} parse failed", url, exception);
 			return Optional.empty();
 		}
+	}
+
+	private static HttpRequest eliteGet(String url) {
+		return HttpRequest.newBuilder(URI.create(url))
+			.timeout(TIMEOUT)
+			.header("User-Agent", USER_AGENT)
+			.GET()
+			.build();
 	}
 
 	private static synchronized void waitForSlot() {
