@@ -913,6 +913,8 @@ public final class GardenSnapshot {
 	private static final int SKYBLOCK_DAYS_PER_YEAR = 372;
 	/** One SkyBlock day = 20 real minutes. */
 	private static final long SKYBLOCK_DAY_SECONDS = 1_200L;
+	/** Hypixel stores sub-threshold joins; the game ignores them, so we do too. */
+	private static final long MIN_CONTEST_COLLECTED = 100L;
 
 	private static List<ContestEntry> parseHypixelContests(JsonObject jacobs) {
 		JsonObject contests = jacobs == null ? null : Leveling.obj(jacobs.get("contests"));
@@ -925,17 +927,48 @@ public final class GardenSnapshot {
 				continue;
 			}
 			JsonObject c = e.getValue().getAsJsonObject();
+			long collected = longOf(c, "collected");
+			if (collected < MIN_CONTEST_COLLECTED) {
+				continue;
+			}
 			String crop = cropFromContestKey(e.getKey());
+			int position = positionOf(c, "claimed_position");
+			int participants = intOf(c, "claimed_participants");
 			String medal = stringOf(c, "claimed_medal");
 			if (medal.isBlank()) {
-				medal = "none";
+				medal = medalFromPlacement(position, participants);
 			}
-			out.add(contestEntry(crop, longOf(c, "collected"), medal.toLowerCase(Locale.ROOT),
-				positionOf(c, "claimed_position"), intOf(c, "claimed_participants"),
-				timestampFromContestKey(e.getKey())));
+			out.add(contestEntry(crop, collected, medal.toLowerCase(Locale.ROOT),
+				position, participants, timestampFromContestKey(e.getKey())));
 		}
 		out.sort(Comparator.comparingLong(ContestEntry::timestampSeconds).reversed());
 		return out;
+	}
+
+	/**
+	 * Bracket from 0-based {@code claimed_position} / {@code claimed_participants}
+	 * when Hypixel omits {@code claimed_medal} (same thresholds as Elite farming-weight).
+	 */
+	static String medalFromPlacement(int position, int participants) {
+		if (position < 0 || participants <= 0) {
+			return "none";
+		}
+		if (position <= Math.floor(participants * 0.02)) {
+			return "diamond";
+		}
+		if (position <= Math.floor(participants * 0.05)) {
+			return "platinum";
+		}
+		if (position <= Math.floor(participants * 0.1)) {
+			return "gold";
+		}
+		if (position <= Math.floor(participants * 0.3)) {
+			return "silver";
+		}
+		if (position <= Math.floor(participants * 0.6)) {
+			return "bronze";
+		}
+		return "none";
 	}
 
 	private static ContestEntry contestEntry(

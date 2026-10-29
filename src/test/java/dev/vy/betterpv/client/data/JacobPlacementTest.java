@@ -85,7 +85,7 @@ public class JacobPlacementTest {
 			{"jacobs_contest":{"contests":{
 			  "467:4_2:WHEAT":{"collected":100,"claimed_position":10,"claimed_participants":100,"claimed_rewards":true},
 			  "467:4_5:MELON":{"collected":200,"claimed_position":5,"claimed_participants":100,"claimed_medal":"bronze","claimed_rewards":true},
-			  "466:12_31:SUGAR_CANE":{"collected":50}
+			  "466:12_31:SUGAR_CANE":{"collected":150}
 			}}}
 			""").getAsJsonObject();
 		List<GardenSnapshot.ContestEntry> contests = GardenSnapshot.fromMember(member).contests();
@@ -95,5 +95,41 @@ public class JacobPlacementTest {
 		assertEquals("SUGAR_CANE", contests.get(2).crop());
 		assertTrue(contests.get(0).timestampSeconds() > contests.get(1).timestampSeconds());
 		assertTrue(contests.get(1).timestampSeconds() > contests.get(2).timestampSeconds());
+	}
+
+	@Test
+	public void ignoresContestsWithFewerThan100Crops() {
+		JsonObject member = JsonParser.parseString("""
+			{"jacobs_contest":{"contests":{
+			  "467:4_2:WHEAT":{"collected":99,"claimed_participants":100,"claimed_position":50,"claimed_rewards":true},
+			  "467:4_3:WHEAT":{"collected":100,"claimed_participants":200,"claimed_position":10,"claimed_rewards":true},
+			  "467:4_4:POTATO_ITEM":{"collected":0}
+			}}}
+			""").getAsJsonObject();
+		GardenSnapshot snap = GardenSnapshot.fromMember(member);
+		assertEquals(1, snap.contests().size());
+		assertEquals(11, snap.placement("WHEAT").best());
+		assertNull(snap.placement("POTATO_ITEM"));
+	}
+
+	@Test
+	public void derivesMedalFromPositionWhenClaimedMedalMissing() {
+		assertEquals("diamond", GardenSnapshot.medalFromPlacement(0, 100));
+		assertEquals("platinum", GardenSnapshot.medalFromPlacement(4, 100));
+		assertEquals("gold", GardenSnapshot.medalFromPlacement(10, 100));
+		assertEquals("silver", GardenSnapshot.medalFromPlacement(25, 100));
+		assertEquals("bronze", GardenSnapshot.medalFromPlacement(50, 100));
+		assertEquals("none", GardenSnapshot.medalFromPlacement(61, 100));
+		assertEquals("none", GardenSnapshot.medalFromPlacement(-1, 100));
+
+		JsonObject member = JsonParser.parseString("""
+			{"jacobs_contest":{"contests":{
+			  "467:4_2:WHEAT":{"collected":100,"claimed_position":10,"claimed_participants":100,"claimed_rewards":true},
+			  "467:4_3:MELON":{"collected":200,"claimed_position":1,"claimed_participants":100,"claimed_medal":"bronze","claimed_rewards":true}
+			}}}
+			""").getAsJsonObject();
+		List<GardenSnapshot.ContestEntry> contests = GardenSnapshot.fromMember(member).contests();
+		assertEquals("bronze", contests.stream().filter(c -> "MELON".equals(c.crop())).findFirst().orElseThrow().medal());
+		assertEquals("gold", contests.stream().filter(c -> "WHEAT".equals(c.crop())).findFirst().orElseThrow().medal());
 	}
 }

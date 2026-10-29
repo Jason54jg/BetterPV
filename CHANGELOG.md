@@ -7,6 +7,8 @@ Jacob contest history no longer depends on Elite’s contests API. The Jacob tab
 ### Changed
 - Contest history source: Hypixel SkyBlock profile data instead of Elite `/contests`
 - Contest timestamps inferred from Hypixel contest keys (`year:month_day:crop`) for relative dates and sorting
+- Contests with fewer than 100 crops collected are ignored (same as in-game)
+- Missing `claimed_medal` is derived from `claimed_position` / `claimed_participants`
 
 ### Removed
 - Elite contest history fetch, parse path, and Jacob tab credit line (Elite remains for farming weight only)
