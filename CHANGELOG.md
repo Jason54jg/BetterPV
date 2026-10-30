@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.16 — Jacob contest key year
+
+Hypixel contest keys store a 0-indexed year; parsing now applies `year + 1` for the SkyBlock calendar year (same as farming-weight `SkyBlockTime.from(year + 1, month, day)`).
+
+### Fixed
+- Jacob contest dates: 0-indexed key year → SkyBlock year (`+ 1`) when deriving unix timestamps
+
 ## 1.2.15 — Home mannequin armor preview
 
 Home player preview keeps skull helmets as textured heads, promotes body pieces to real armor for CIT, and stamps live `ExtraAttributes.skin` / `dye_item` so armor cosmetics show on the mannequin.

@@ -15,7 +15,10 @@ public class GardenSnapshotTest {
 
 	@Test
 	public void contestKeyTimestampMatchesSkyBlockEpoch() {
-		// farming-weight SkyBlockTime.fromContestKey("467:4_2:WHEAT")
+		// Key year is 0-indexed → SkyBlock year = keyYear + 1 (farming-weight from(year + 1, …)).
+		// 0:1_1 → Year 1 Early Spring 1 = SkyBlock epoch.
+		assertEquals(1_560_275_700L, GardenSnapshot.timestampFromContestKey("0:1_1:WHEAT"));
+		// farming-weight SkyBlockTime.fromContestKey("467:4_2:WHEAT") / Elite /contests/1768857300
 		assertEquals(1_768_857_300L, GardenSnapshot.timestampFromContestKey("467:4_2:WHEAT"));
 		assertEquals(1_768_857_300L, GardenSnapshot.timestampFromContestKey("467:4_2:INK_SACK:3"));
 	}

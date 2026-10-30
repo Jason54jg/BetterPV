@@ -1010,7 +1010,8 @@ public final class GardenSnapshot {
 
 	/**
 	 * Unix seconds for a Hypixel contest key {@code year:month_day:CROP}.
-	 * Year is zero-indexed; month and day are 1-indexed (farming-weight SkyBlockTime).
+	 * Key year is 0-indexed — SkyBlock calendar year is {@code keyYear + 1}; month and day
+	 * are 1-indexed. Same as farming-weight {@code SkyBlockTime.from(year + 1, month, day)}.
 	 */
 	static long timestampFromContestKey(String key) {
 		if (key == null || key.isBlank()) {
@@ -1034,7 +1035,9 @@ public final class GardenSnapshot {
 			if (month < 1 || day < 1) {
 				return 0L;
 			}
-			long elapsedDays = (long) year * SKYBLOCK_DAYS_PER_YEAR
+			// 0-indexed key year → 1-indexed SkyBlock year, then back to 0-based elapsed years.
+			int skyblockYear = year + 1;
+			long elapsedDays = (long) (skyblockYear - 1) * SKYBLOCK_DAYS_PER_YEAR
 				+ (long) (month - 1) * SKYBLOCK_DAYS_PER_MONTH
 				+ (day - 1);
 			return SKYBLOCK_EPOCH_SECONDS + elapsedDays * SKYBLOCK_DAY_SECONDS;
