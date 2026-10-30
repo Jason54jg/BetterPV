@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.15 — Home mannequin armor preview
+
+Home player preview keeps skull helmets as textured heads, promotes body pieces to real armor for CIT, and stamps live `ExtraAttributes.skin` / `dye_item` so armor cosmetics show on the mannequin.
+
+### Fixed
+- Mannequin: preserve armor skins/dyes; do not turn skull helmets into diamond helmets
+
 ## 1.2.14 — Jacob medal bracket boundaries
 
 Documented and regression-tested Jacob medal derivation at bracket edges for 0-based `claimed_position` (Hypixel +1 slot / Elite `<= floor(n * pct)`).
