@@ -948,27 +948,36 @@ public final class GardenSnapshot {
 	/**
 	 * Bracket from 0-based {@code claimed_position} / {@code claimed_participants}
 	 * when Hypixel omits {@code claimed_medal} (same thresholds as Elite farming-weight).
+	 * <p>
+	 * Hypixel brackets include one extra player beyond the raw percentage. With a 0-based
+	 * position that is exactly {@code position <= floor(participants * pct)} — not
+	 * {@code <}, and not a 1-based {@code placement <= floor(...)} (that drops the +1).
 	 */
 	static String medalFromPlacement(int position, int participants) {
 		if (position < 0 || participants <= 0) {
 			return "none";
 		}
-		if (position <= Math.floor(participants * 0.02)) {
+		if (position <= bracketCut(participants, 0.02)) {
 			return "diamond";
 		}
-		if (position <= Math.floor(participants * 0.05)) {
+		if (position <= bracketCut(participants, 0.05)) {
 			return "platinum";
 		}
-		if (position <= Math.floor(participants * 0.1)) {
+		if (position <= bracketCut(participants, 0.1)) {
 			return "gold";
 		}
-		if (position <= Math.floor(participants * 0.3)) {
+		if (position <= bracketCut(participants, 0.3)) {
 			return "silver";
 		}
-		if (position <= Math.floor(participants * 0.6)) {
+		if (position <= bracketCut(participants, 0.6)) {
 			return "bronze";
 		}
 		return "none";
+	}
+
+	/** Inclusive last 0-based index for a Jacob % bracket (Elite / Hypixel +1 slot). */
+	static int bracketCut(int participants, double fraction) {
+		return (int) Math.floor(participants * fraction);
 	}
 
 	private static ContestEntry contestEntry(

@@ -114,14 +114,6 @@ public class JacobPlacementTest {
 
 	@Test
 	public void derivesMedalFromPositionWhenClaimedMedalMissing() {
-		assertEquals("diamond", GardenSnapshot.medalFromPlacement(0, 100));
-		assertEquals("platinum", GardenSnapshot.medalFromPlacement(4, 100));
-		assertEquals("gold", GardenSnapshot.medalFromPlacement(10, 100));
-		assertEquals("silver", GardenSnapshot.medalFromPlacement(25, 100));
-		assertEquals("bronze", GardenSnapshot.medalFromPlacement(50, 100));
-		assertEquals("none", GardenSnapshot.medalFromPlacement(61, 100));
-		assertEquals("none", GardenSnapshot.medalFromPlacement(-1, 100));
-
 		JsonObject member = JsonParser.parseString("""
 			{"jacobs_contest":{"contests":{
 			  "467:4_2:WHEAT":{"collected":100,"claimed_position":10,"claimed_participants":100,"claimed_rewards":true},
@@ -131,5 +123,36 @@ public class JacobPlacementTest {
 		List<GardenSnapshot.ContestEntry> contests = GardenSnapshot.fromMember(member).contests();
 		assertEquals("bronze", contests.stream().filter(c -> "MELON".equals(c.crop())).findFirst().orElseThrow().medal());
 		assertEquals("gold", contests.stream().filter(c -> "WHEAT".equals(c.crop())).findFirst().orElseThrow().medal());
+	}
+
+	/**
+	 * For N=100, Elite cuts are floor(2/5/10/30/60). Inclusive {@code <=} on 0-based position
+	 * keeps Hypixel's extra slot (e.g. diamond positions 0..2 = 3 players, not 2).
+	 */
+	@Test
+	public void medalBracketBoundariesAreInclusiveOnZeroBasedPosition() {
+		assertEquals(2, GardenSnapshot.bracketCut(100, 0.02));
+		assertEquals(5, GardenSnapshot.bracketCut(100, 0.05));
+		assertEquals(10, GardenSnapshot.bracketCut(100, 0.1));
+		assertEquals(30, GardenSnapshot.bracketCut(100, 0.3));
+		assertEquals(60, GardenSnapshot.bracketCut(100, 0.6));
+
+		assertEquals("diamond", GardenSnapshot.medalFromPlacement(0, 100));
+		assertEquals("diamond", GardenSnapshot.medalFromPlacement(2, 100));
+		assertEquals("platinum", GardenSnapshot.medalFromPlacement(3, 100));
+		assertEquals("platinum", GardenSnapshot.medalFromPlacement(5, 100));
+		assertEquals("gold", GardenSnapshot.medalFromPlacement(6, 100));
+		assertEquals("gold", GardenSnapshot.medalFromPlacement(10, 100));
+		assertEquals("silver", GardenSnapshot.medalFromPlacement(11, 100));
+		assertEquals("silver", GardenSnapshot.medalFromPlacement(30, 100));
+		assertEquals("bronze", GardenSnapshot.medalFromPlacement(31, 100));
+		assertEquals("bronze", GardenSnapshot.medalFromPlacement(60, 100));
+		assertEquals("none", GardenSnapshot.medalFromPlacement(61, 100));
+		assertEquals("none", GardenSnapshot.medalFromPlacement(-1, 100));
+
+		// Non-round N: floor(1290*0.02)=25 still includes position 25 as diamond (+1 slot).
+		assertEquals(25, GardenSnapshot.bracketCut(1290, 0.02));
+		assertEquals("diamond", GardenSnapshot.medalFromPlacement(25, 1290));
+		assertEquals("platinum", GardenSnapshot.medalFromPlacement(26, 1290));
 	}
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.14 — Jacob medal bracket boundaries
+
+Documented and regression-tested Jacob medal derivation at bracket edges for 0-based `claimed_position` (Hypixel +1 slot / Elite `<= floor(n * pct)`).
+
+### Changed
+- Clarify medal cutoffs; add inclusive boundary tests so `<` or 1-based comparisons cannot silently regress
+
 ## 1.2.13 — Elite User-Agent
 
 Elite API requests now send an identifiable `BetterPV/<version>` User-Agent.
