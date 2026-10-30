@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.17 — Missing accessories (0.27.2)
+
+Accessory bag Missing list now knows the Minister-update Hotspot and Powder of the People upgrade chains (NEU’s powder order was inverted).
+
+### Added
+- Accessory families: Hotspot Talisman → Ring → Artifact
+- Accessory families: Powder of One → Few → Many → People
+
+### Changed
+- Missing accessories: toggle sort between coins/MP (best value) and absolute net price
+
+### Fixed
+- Missing accessories: prefer BetterPV family ranks over NEU when a chain is listed (fixes inverted Powder upgrades)
+
 ## 1.2.16 — Jacob contest key year
 
 Hypixel contest keys store a 0-indexed year; parsing now applies `year + 1` for the SkyBlock calendar year (same as farming-weight `SkyBlockTime.from(year + 1, month, day)`).
